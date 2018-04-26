@@ -96,7 +96,6 @@ router.delete('/tags/:id', (req, res, next) => {
       res.sendStatus(204);
     })
     .catch(next);
-
 });
 
 module.exports = router;
