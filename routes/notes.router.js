@@ -132,7 +132,7 @@ router.put('/notes/:id', (req, res, next) => {
     })
     .then(result => {
       if (result) {
-        const hydrated = hydrateNotes(result);
+        const [hydrated] = hydrateNotes(result);
         res.json(hydrated);
       } else {
         next();
@@ -160,7 +160,7 @@ router.put('/notes/:id', (req, res, next) => {
 
 // Post (insert) a note
 router.post('/notes', (req, res, next) => {
-  const { title, content, folder_id, tags } = req.body;
+  const { title, content, folder_id, tags = [] } = req.body;
 
   const newItem = {
     title: title,
