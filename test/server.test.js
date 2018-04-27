@@ -140,16 +140,23 @@ describe('Noteful App', function () {
 
   describe('GET /api/notes/:id', function () {
 
-    it('should return correct notes', function () {
-      return chai.request(app)
-        .get('/api/notes/1000')
-        .then(function (res) {
+    it('should return correct notes', function() {
+
+      const dataPromise = knex.first()
+        .from('notes')
+        .where('id', 1000);
+
+      const apiPromise = chai.request(app)
+        .get('/api/notes/1000');
+
+      return Promise.all([dataPromise, apiPromise])
+        .then(function([data, res]) {
           expect(res).to.have.status(200);
           expect(res).to.be.json;
           expect(res.body).to.be.an('object');
           expect(res.body).to.include.keys('id', 'title', 'content');
           expect(res.body.id).to.equal(1000);
-          expect(res.body.title).to.equal('5 life lessons learned from cats');
+          expect(res.body.title).to.equal(data.title);
         });
     });
 
@@ -168,21 +175,41 @@ describe('Noteful App', function () {
     it('should create and return a new item when provided valid data', function () {
       const newItem = {
         'title': 'The best article about cats ever!',
-        'content': 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor...'
+        'content': 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor...',
+        'tags': []
       };
+      let body;
       return chai.request(app)
         .post('/api/notes')
         .send(newItem)
-        .then(function (res) {
+        .then(function(res) {
+          body = res.body;
           expect(res).to.have.status(201);
-          expect(res).to.be.json;
-          expect(res.body).to.be.a('object');
-          expect(res.body).to.include.keys('id', 'title', 'content');
-
-          expect(res.body.title).to.equal(newItem.title);
-          expect(res.body.content).to.equal(newItem.content);
           expect(res).to.have.header('location');
+          expect(res).to.be.json;
+          expect(body).to.be.a('object');
+          expect(body).to.include.keys('id', 'title', 'content');
+          return knex.select().from('notes').where('id', body.id);
+        })
+        .then(([data]) => {
+          expect(body.title).to.equal(data.title);
+          expect(body.content).to.equal(data.content);
         });
+
+
+      // return chai.request(app)
+      //   .post('/api/notes')
+      //   .send(newItem)
+      //   .then(function (res) {
+      //     expect(res).to.have.status(201);
+      //     expect(res).to.be.json;
+      //     expect(res.body).to.be.a('object');
+      //     expect(res.body).to.include.keys('id', 'title', 'content');
+      //
+      //     expect(res.body.title).to.equal(newItem.title);
+      //     expect(res.body.content).to.equal(newItem.content);
+      //     expect(res).to.have.header('location');
+      //   });
     });
 
     it('should return an error when missing "title" field', function () {
