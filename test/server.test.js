@@ -77,16 +77,21 @@ describe('Noteful App', function () {
 
   describe('GET /api/notes', function () {
 
-    it('should return the default of 10 Notes ', function () {
-      return chai.request(app)
-        .get('/api/notes')
-        .then(function (res) {
+    it('should return the default of 10 Notes', function() {
+      let count;
+      return knex.count()
+        .from('notes')
+        .then(([result]) => {
+          count = Number(result.count);
+          return chai.request(app).get('/api/notes');
+        })
+        .then(function(res) {
           expect(res).to.have.status(200);
           expect(res).to.be.json;
           expect(res.body).to.be.a('array');
-          expect(res.body).to.have.length(10);
+          expect(res.body).to.have.length(count);
         });
-    });
+      });
 
     it('should return a list with the correct right fields', function () {
       return chai.request(app)
@@ -103,17 +108,30 @@ describe('Noteful App', function () {
         });
     });
 
-    it('should return correct search results for a valid query', function () {
-      return chai.request(app)
-        .get('/api/notes?searchTerm=about%20cats')
-        .then(function (res) {
+    it('should return correct search for a valid query', function() {
+      let res;
+      return chai.requst(app).get('/api/notes?searchTerm=gaga')
+        .then(function(_res) {
+          res = _res;
           expect(res).to.have.status(200);
-          expect(res).to.be.json;
-          expect(res.body).to.be.a('array');
-          expect(res.body).to.have.length(4);
-          expect(res.body[0]).to.be.an('object');
-        });
-    });
+
+        })
+    })
+
+
+
+
+    // it('should return correct search results for a valid query', function () {
+    //   return chai.request(app)
+    //     .get('/api/notes?searchTerm=about%20cats')
+    //     .then(function (res) {
+    //       expect(res).to.have.status(200);
+    //       expect(res).to.be.json;
+    //       expect(res.body).to.be.a('array');
+    //       expect(res.body).to.have.length(4);
+    //       expect(res.body[0]).to.be.an('object');
+    //     });
+    // });
 
     it('should return an empty array for an incorrect query', function () {
       return chai.request(app)
