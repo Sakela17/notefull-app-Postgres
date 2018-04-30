@@ -15,7 +15,7 @@ const expect = chai.expect;
 
 chai.use(chaiHttp);
 
-describe('Reality check', function () {
+describe('Reality check', function() {
 
   it('true should be true', function () {
     expect(true).to.be.true;
@@ -41,15 +41,15 @@ describe('Environment', () => {
 
 describe('Noteful App', function () {
 
-  beforeEach(function () {
+  beforeEach(function() {
     return seedData('./db/noteful.sql');
   });
 
-  after(function () {
+  after(function() {
     return knex.destroy(); // destroy the connection
   });
 
-  describe('Static app', function () {
+  describe('Static app', function() {
 
     it('GET request "/" should return the index page', function () {
       return chai.request(app)
@@ -63,7 +63,7 @@ describe('Noteful App', function () {
 
   });
 
-  describe('404 handler', function () {
+  describe('404 handler', function() {
 
     it('should respond with 404 when given a bad path', function () {
       return chai.request(app)
@@ -75,7 +75,7 @@ describe('Noteful App', function () {
 
   });
 
-  describe('GET /api/notes', function () {
+  describe('GET /api/notes', function() {
 
     it('should return the default of 10 Notes', function() {
       let count;
@@ -138,7 +138,7 @@ describe('Noteful App', function () {
 
   });
 
-  describe('GET /api/notes/:id', function () {
+  describe('GET /api/notes/:id', function() {
 
     it('should return correct notes', function() {
 
@@ -170,7 +170,7 @@ describe('Noteful App', function () {
 
   });
 
-  describe('POST /api/notes', function () {
+  describe('POST /api/notes', function() {
 
     it('should create and return a new item when provided valid data', function () {
       const newItem = {
@@ -229,7 +229,7 @@ describe('Noteful App', function () {
 
   });
 
-  describe('PUT /api/notes/:id', function () {
+  describe('PUT /api/notes/:id', function() {
 
     it('should update the note', function () {
       const updateItem = {
@@ -281,7 +281,7 @@ describe('Noteful App', function () {
 
   });
 
-  describe('DELETE  /api/notes/:id', function () {
+  describe('DELETE  /api/notes/:id', function() {
 
     it('should delete an item by id', function () {
       return chai.request(app)
@@ -292,5 +292,122 @@ describe('Noteful App', function () {
     });
 
   });
+
+  describe('GET /api/folders', function() {
+
+    it('should return all folders', function() {
+
+      const dataPromise = knex('folders').first().count();
+
+      const apiPromise = chai.request(app).get('/api/folders');
+
+      return Promise.all([dataPromise, apiPromise])
+        .then(function ([data, res]) {
+          let count = Number(data.count);
+          expect(res).to.have.status(200);
+          expect(res).to.be.json;
+          expect(res.body).to.be.an('array');
+          expect(res.body).to.have.length(count);
+        });
+    });
+
+    it('should return a list with the correct fields', function() {
+      return chai.request(app).get('/api/folders')
+        .then(function(res) {
+          expect(res).to.have.status(200);
+          expect(res).to.be.json;
+          expect(res.body).to.be.an('array');
+          res.body.forEach(function (item) {
+            expect(item).to.be.a('object');
+            expect(item).to.include.keys('id', 'name');
+          });
+        });
+    });
+
+  });
+
+  describe('GET /api/folders/:id', function() {
+
+    it('should return correct folder', function() {
+
+      let id, name;
+
+      return knex('folders').first()
+        .then(folder => {
+          id   = folder.id;
+          name = folder.name;
+          return chai.request(app).get('/api/folders/100');
+        })
+        .then(function(res) {
+          expect(res).to.have.status(200);
+          expect(res).to.be.json;
+          expect(res.body).to.be.an('object');
+          expect(res.body).to.include.keys('id', 'name');
+          expect(res.body.id).to.equal(id);
+          expect(res.body.name).to.equal(name);
+        });
+    });
+
+  })
+
+  describe('PUT /api/folders/:id', function() {
+
+
+
+
+  })
+
+  // describe('PUT /api/notes/:id', function() {
+  //
+  //   it('should update the note', function () {
+  //     const updateItem = {
+  //       'title': 'What about dogs?!',
+  //       'content': 'woof woof'
+  //     };
+  //     return chai.request(app)
+  //       .put('/api/notes/1005')
+  //       .send(updateItem)
+  //       .then(function (res) {
+  //         expect(res).to.have.status(200);
+  //         expect(res).to.be.json;
+  //         expect(res.body).to.be.a('object');
+  //         expect(res.body).to.include.keys('id', 'title', 'content');
+  //
+  //         expect(res.body.id).to.equal(1005);
+  //         expect(res.body.title).to.equal(updateItem.title);
+  //         expect(res.body.content).to.equal(updateItem.content);
+  //       });
+  //   });
+  //
+  //   it('should respond with a 404 for an invalid id', function () {
+  //     const updateItem = {
+  //       'title': 'What about dogs?!',
+  //       'content': 'woof woof'
+  //     };
+  //     return chai.request(app)
+  //       .put('/DOES/NOT/EXIST')
+  //       .send(updateItem)
+  //       .then(res => {
+  //         expect(res).to.have.status(404);
+  //       });
+  //   });
+  //
+  //   it('should return an error when missing "title" field', function () {
+  //     const updateItem = {
+  //       'foo': 'bar'
+  //     };
+  //     return chai.request(app)
+  //       .put('/api/notes/1005')
+  //       .send(updateItem)
+  //       .then(res => {
+  //         expect(res).to.have.status(400);
+  //         expect(res).to.be.json;
+  //         expect(res.body).to.be.a('object');
+  //         expect(res.body.message).to.equal('Missing `title` in request body');
+  //       });
+  //   });
+  //
+  // });
+
 
 });

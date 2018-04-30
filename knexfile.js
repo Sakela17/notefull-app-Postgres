@@ -3,13 +3,15 @@
 module.exports = {
   development: {
     client: 'pg',
-    connection: process.env.DATABASE_URL || 'postgres://localhost/noteful-app',
+    // remove dev:volk0dav@ when testing on Travis
+    connection: process.env.DATABASE_URL || 'postgres://dev:volk0dav@localhost/noteful-app',
     debug: true, // http://knexjs.org/#Installation-debug
     pool: { min: 1, max: 2 }
   },
   test: {
     client: 'pg',
-    connection: process.env.TEST_DATABASE_URL || 'postgres://localhost/noteful-test',
+    // remove dev:volk0dav@ when testing on Travis
+    connection: process.env.TEST_DATABASE_URL || 'postgres://dev:volk0dav@localhost/noteful-test',
     pool: { min: 1, max: 2 }
   },
   production: {
