@@ -281,7 +281,7 @@ describe('Noteful App', function () {
 
   });
 
-  describe('DELETE  /api/notes/:id', function() {
+  describe('DELETE /api/notes/:id', function() {
 
     it('should delete an item by id', function () {
       return chai.request(app)
